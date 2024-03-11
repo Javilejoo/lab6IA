@@ -1,8 +1,8 @@
-import random
 import numpy as np
 import pygame
 import sys
 import math
+import random
 
 Blue = (0,0,255)
 Black = (0,0,0)
@@ -216,6 +216,11 @@ while not juego_terminado:
             turno += 1
             turno = turno % 2
 
+<<<<<<< HEAD
     if juego_terminado:
         pygame.time.wait(3000)
     
+=======
+    if game_over:
+        pygame.time.wait(3000)
+>>>>>>> 9295b46c5dd26c4ef26af504f5f1674195ccabba
