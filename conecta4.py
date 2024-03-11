@@ -138,7 +138,7 @@ def draw_board(tablero):
 
 tablero = crear_tablero()
 print_board(tablero)
-game_over = False
+juego_terminado = False
 
 
 pygame.init()
@@ -159,7 +159,7 @@ myfont = pygame.font.SysFont("monospace", 75)
 
 turno = random.randint(HUMAN, AI)
 
-while not game_over:
+while not juego_terminado:
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -186,7 +186,7 @@ while not game_over:
                     if winning_move(tablero, HUMAN_PIECE):
                         label = myfont.render("Jugador 1 gana!!", 1, Red)
                         screen.blit(label, (40,10))
-                        game_over = True
+                        juego_terminado = True
 
 
                     turno += 1
@@ -196,7 +196,7 @@ while not game_over:
 
 
     # IA hace su movimiento
-    if turno == AI and not game_over:
+    if turno == AI and not juego_terminado:
         #col = random.randint(0, COLUMN_COUNT-1)
         col = pick_best_move(tablero, AI_PIECE)
                 
@@ -208,7 +208,7 @@ while not game_over:
             if winning_move(tablero, AI_PIECE):
                 label = myfont.render("Jugador 2 gana!!", 2, Yellow)
                 screen.blit(label, (40,10))
-                game_over = True
+                juego_terminado = True
 
             print_board(tablero) 
             draw_board(tablero)
@@ -216,6 +216,6 @@ while not game_over:
             turno += 1
             turno = turno % 2
 
-    if game_over:
+    if juego_terminado:
         pygame.time.wait(3000)
     
