@@ -87,6 +87,7 @@ def get_valid_locations(board):
 def is_game_over(board):
     return winning_move(board, PLAYER_PIECE) or winning_move(board, AI_PIECE) or len(get_valid_locations(board)) == 0
 
+# TODO verificar la lógica detrás
 def score_position(board, piece):
     # Implement scoring logic here. For simplicity, return 0.
     # You can improve by checking for potential wins, blocks, etc.
@@ -138,6 +139,7 @@ def minimax(board, depth, alpha, beta, is_maximizing):
                 break
         return column, value
 
+# definir piezas
 AI_PIECE = 2
 PLAYER_PIECE = 1
 EMPTY = 0
