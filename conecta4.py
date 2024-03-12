@@ -1,8 +1,8 @@
+import random
 import numpy as np
 import pygame
 import sys
 import math
-import random
 
 Blue = (0,0,255)
 Black = (0,0,0)
@@ -69,6 +69,26 @@ def winning_move(tablero, piece):
         for r in range(3, ROW_COUNT):
             if tablero[r][c] == piece and tablero[r-1][c+1] == piece and tablero[r-2][c+2] == piece and tablero[r-3][c+3] == piece:
                 return True
+            
+def evualate_window(window, piece):
+    score = 0
+    opp_piece =HUMAN_PIECE
+    if piece == HUMAN_PIECE:
+        opp_piece = AI_PIECE
+
+    
+    if window.count(piece) == 4:
+        score += 100
+    elif window.count(piece) == 3 and window.count(EMPTY) == 1:
+        score += 10
+    elif window.count(piece) == 2 and window.count(EMPTY) == 2:
+        score += 5
+
+    if window.count(opp_piece) == 3 and window.count(EMPTY) == 1:
+        score -= 8
+
+    return score
+
 def score_position(tablero, piece):
     score = 0
     # Score horizontal
@@ -76,22 +96,25 @@ def score_position(tablero, piece):
         row_array = [int(i) for i in list(tablero[r,:])]
         for c in range(COLUMN_COUNT-3):
             window = row_array[c:c+WINDOW_LENGTH]
-            # four in a row
-            if window.count(piece) == 4:
-                score += 100
-            # three in a row
-            elif window.count(piece) == 3 and window.count(EMPTY) == 1:
-                score += 10
+            score += evualate_window(window, piece)
 
     # Score vertical
     for c in range(COLUMN_COUNT):
         col_array = [int(i) for i in list(tablero[:,c])]
         for r in range(ROW_COUNT-3):
             window = col_array[r:r+WINDOW_LENGTH]
-            if window.count(piece) == 4:
-                score += 100
-            elif window.count(piece) == 3 and window.count(EMPTY) == 1:
-                score += 10
+            score += evualate_window(window, piece)
+
+    # score positive sloped diagonal
+    for r in range(ROW_COUNT-3):
+        for c in range(COLUMN_COUNT-3):
+            window = [tablero[r+i][c+i] for i in range(WINDOW_LENGTH)]
+            score += evualate_window(window, piece)
+
+    for r in range(ROW_COUNT-3):
+        for c in range(COLUMN_COUNT):
+            window = [tablero[r+3-i][c+i] for i in range(WINDOW_LENGTH)]
+            score += evualate_window(window, piece)
 
     return score
 
@@ -138,7 +161,7 @@ def draw_board(tablero):
 
 tablero = crear_tablero()
 print_board(tablero)
-juego_terminado = False
+game_over = False
 
 
 pygame.init()
@@ -159,7 +182,7 @@ myfont = pygame.font.SysFont("monospace", 75)
 
 turno = random.randint(HUMAN, AI)
 
-while not juego_terminado:
+while not game_over:
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -186,7 +209,7 @@ while not juego_terminado:
                     if winning_move(tablero, HUMAN_PIECE):
                         label = myfont.render("Jugador 1 gana!!", 1, Red)
                         screen.blit(label, (40,10))
-                        juego_terminado = True
+                        game_over = True
 
 
                     turno += 1
@@ -196,7 +219,7 @@ while not juego_terminado:
 
 
     # IA hace su movimiento
-    if turno == AI and not juego_terminado:
+    if turno == AI and not game_over:
         #col = random.randint(0, COLUMN_COUNT-1)
         col = pick_best_move(tablero, AI_PIECE)
                 
@@ -208,19 +231,13 @@ while not juego_terminado:
             if winning_move(tablero, AI_PIECE):
                 label = myfont.render("Jugador 2 gana!!", 2, Yellow)
                 screen.blit(label, (40,10))
-                juego_terminado = True
+                game_over = True
 
             print_board(tablero) 
             draw_board(tablero)
 
             turno += 1
             turno = turno % 2
-
-<<<<<<< HEAD
-    if juego_terminado:
-        pygame.time.wait(3000)
-    
-=======
     if game_over:
         pygame.time.wait(3000)
->>>>>>> 9295b46c5dd26c4ef26af504f5f1674195ccabba
+    
