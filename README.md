@@ -24,4 +24,4 @@ Para instalar pygame, puedes utilizar el siguiente comando:
 [Enlace para ver video](https://youtu.be/wzEt9WmXcVQ)
 
 ## Video referencia del codigo
-[Enlace] (https://www.youtube.com/watch?v=UYgyRArKDEs&list=RDCMUCq6XkhO5SZ66N04IcPbqNcw&index=5)
+[Enlace](https://www.youtube.com/watch?v=UYgyRArKDEs&list=RDCMUCq6XkhO5SZ66N04IcPbqNcw&index=5)
