@@ -12,8 +12,8 @@ YELLOW = (255,255,0)
 ROW_COUNT = 6
 COLUMN_COUNT = 7
 
-PLAYER1 = 0
-PLAYER2 = 1
+HUMAN = 0
+AI = 1
 
 EMPTY = 0
 HUMAN_PIECE = 1
@@ -120,55 +120,50 @@ def score_position(board, piece):
 def is_terminal_node(board):
 	return winning_move(board, HUMAN_PIECE) or winning_move(board, AI_PIECE) or len(get_valid_locations(board)) == 0
 
-'''
-is_activated:Boolean para determinar si se activa o no el alpha-beta running (Default True) 
-'''
-def minimax(board, depth, alpha, beta, maximizingHUMAN, is_activated):
-    valid_locations = get_valid_locations(board)
-    is_terminal = is_terminal_node(board)
-    if depth == 0 or is_terminal:
-        if is_terminal:
-            if winning_move(board, AI_PIECE):
-                return (None, float("inf"))  # Use float("inf") for consistency
-            elif winning_move(board, HUMAN_PIECE):
-                return (None, float("-inf"))
-            else:  # Game is over, no more valid moves
-                return (None, 0)
-        else:  # Depth is zero
-            return (None, score_position(board, AI_PIECE))
-    if maximizingHUMAN:
-        value = -math.inf
-        column = random.choice(valid_locations)
-        for col in valid_locations:
-            row = get_next_open_row(board, col)
-            b_copy = board.copy()
-            drop_piece(b_copy, row, col, AI_PIECE)
-            new_score = minimax(b_copy, depth-1, alpha, beta, False, is_activated)[1]
-            if new_score > value:
-                value = new_score
-                column = col
-            if is_activated:  # Update alpha only if Alpha-Beta Pruning is activated
-                alpha = max(alpha, value)
-                if alpha >= beta:
-                    break
-        return column, value
+def minimax(board, depth, alpha, beta, maximizingHUMAN):
+	valid_locations = get_valid_locations(board)
+	is_terminal = is_terminal_node(board)
+	if depth == 0 or is_terminal:
+		if is_terminal:
+			if winning_move(board, AI_PIECE):
+				return (None, 100000000000000)
+			elif winning_move(board, HUMAN_PIECE):
+				return (None, -10000000000000)
+			else: # Game is over, no more valid moves
+				return (None, 0)
+		else: # Depth is zero
+			return (None, score_position(board, AI_PIECE))
+	if maximizingHUMAN:
+		value = -math.inf
+		column = random.choice(valid_locations)
+		for col in valid_locations:
+			row = get_next_open_row(board, col)
+			b_copy = board.copy()
+			drop_piece(b_copy, row, col, AI_PIECE)
+			new_score = minimax(b_copy, depth-1, alpha, beta, False)[1]
+			if new_score > value:
+				value = new_score
+				column = col
+			alpha = max(alpha, value)
+			if alpha >= beta:
+				break
+		return column, value
 
-    else:  # Minimizing HUMAN
-        value = math.inf
-        column = random.choice(valid_locations)
-        for col in valid_locations:
-            row = get_next_open_row(board, col)
-            b_copy = board.copy()
-            drop_piece(b_copy, row, col, HUMAN_PIECE)
-            new_score = minimax(b_copy, depth-1, alpha, beta, True, is_activated)[1]
-            if new_score < value:
-                value = new_score
-                column = col
-            if is_activated:  # Update beta only if Alpha-Beta Pruning is activated
-                beta = min(beta, value)
-                if alpha >= beta:
-                    break
-        return column, value
+	else: # Minimizing HUMAN
+		value = math.inf
+		column = random.choice(valid_locations)
+		for col in valid_locations:
+			row = get_next_open_row(board, col)
+			b_copy = board.copy()
+			drop_piece(b_copy, row, col, HUMAN_PIECE)
+			new_score = minimax(b_copy, depth-1, alpha, beta, True)[1]
+			if new_score < value:
+				value = new_score
+				column = col
+			beta = min(beta, value)
+			if alpha >= beta:
+				break
+		return column, value
 
 def get_valid_locations(board):
 	valid_locations = []
@@ -206,25 +201,6 @@ def draw_board(board):
 			elif board[r][c] == AI_PIECE: 
 				pygame.draw.circle(screen, YELLOW, (int(c*SQUARESIZE+SQUARESIZE/2), height-int(r*SQUARESIZE+SQUARESIZE/2)), RADIUS)
 	pygame.display.update()
-	
-
-def activated(is_activated):
-	if is_activated == 'y':
-		return True
-	elif is_activated == 'n':
-		return False
-
-# menu 
-print("+----------------------+")
-print("+--Elija preferencias--+")
-print("+----------------------+")
-
-print("+----Modo de juego-----+")
-print("1. Jugador vs IA\n" + "2. IA vs IA")
-pvp = int(input())
-
-print("Incluir alpha-beta running? : y/n")
-is_activated = input()
 
 board = create_board()
 print_board(board)
@@ -247,127 +223,68 @@ pygame.display.update()
 
 myfont = pygame.font.SysFont("monospace", 75)
 
-turn = random.randint(PLAYER1, PLAYER2)
-	
-# IA vs Persona
-if pvp == 1:
-    while not game_over:
+turn = random.randint(HUMAN, AI)
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
+while not game_over:
 
-            if event.type == pygame.MOUSEMOTION:
-                pygame.draw.rect(screen, BLACK, (0,0, width, SQUARESIZE))
-                posx = event.pos[0]
-                if turn == PLAYER1:
-                    pygame.draw.circle(screen, RED, (posx, int(SQUARESIZE/2)), RADIUS)
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			sys.exit()
 
-            pygame.display.update()
+		if event.type == pygame.MOUSEMOTION:
+			pygame.draw.rect(screen, BLACK, (0,0, width, SQUARESIZE))
+			posx = event.pos[0]
+			if turn == HUMAN:
+				pygame.draw.circle(screen, RED, (posx, int(SQUARESIZE/2)), RADIUS)
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                pygame.draw.rect(screen, BLACK, (0,0, width, SQUARESIZE))
-                #print(event.pos)
-                # Ask for Player 1 Input
-                if turn == PLAYER1:
-                    posx = event.pos[0]
-                    col = int(math.floor(posx/SQUARESIZE))
+		pygame.display.update()
 
-                    if is_valid_location(board, col):
-                        row = get_next_open_row(board, col)
-                        drop_piece(board, row, col, HUMAN_PIECE)
+		if event.type == pygame.MOUSEBUTTONDOWN:
+			pygame.draw.rect(screen, BLACK, (0,0, width, SQUARESIZE))
+			#print(event.pos)
+			# Ask for HUMAN 1 Input
+			if turn == HUMAN:
+				posx = event.pos[0]
+				col = int(math.floor(posx/SQUARESIZE))
 
-                        if winning_move(board, HUMAN_PIECE):
-                            label = myfont.render("Player 1 wins!!", 1, RED)
-                            screen.blit(label, (40,10))
-                            game_over = True
+				if is_valid_location(board, col):
+					row = get_next_open_row(board, col)
+					drop_piece(board, row, col, HUMAN_PIECE)
 
-                        turn += 1
-                        turn = turn % 2
+					if winning_move(board, HUMAN_PIECE):
+						label = myfont.render("HUMAN 1 wins!!", 1, RED)
+						screen.blit(label, (40,10))
+						game_over = True
 
-                        print_board(board)
-                        draw_board(board)
+					turn += 1
+					turn = turn % 2
+
+					print_board(board)
+					draw_board(board)
 
 
-        # # Ask for Player 2 Input
-        if turn == PLAYER2 and not game_over:				
+	# # Ask for HUMAN 2 Input
+	if turn == AI and not game_over:				
 
-            #col = random.randint(0, COLUMN_COUNT-1)
-            #col = pick_best_move(board, AI_PIECE)
-            col, minimax_score = minimax(board, 5, -math.inf, math.inf, True, activated(is_activated))
+		#col = random.randint(0, COLUMN_COUNT-1)
+		#col = pick_best_move(board, AI_PIECE)
+		col, minimax_score = minimax(board, 5, -math.inf, math.inf, True)
 
-            if is_valid_location(board, col):
-                #pygame.time.wait(500)
-                row = get_next_open_row(board, col)
-                drop_piece(board, row, col, AI_PIECE)
+		if is_valid_location(board, col):
+			#pygame.time.wait(500)
+			row = get_next_open_row(board, col)
+			drop_piece(board, row, col, AI_PIECE)
 
-                if winning_move(board, AI_PIECE):
-                    label = myfont.render("Player 2 wins!!", 1, YELLOW)
-                    screen.blit(label, (40,10))
-                    game_over = True
+			if winning_move(board, AI_PIECE):
+				label = myfont.render("HUMAN 2 wins!!", 1, YELLOW)
+				screen.blit(label, (40,10))
+				game_over = True
 
-                print_board(board)
-                draw_board(board)
+			print_board(board)
+			draw_board(board)
 
-                turn += 1
-                turn = turn % 2
+			turn += 1
+			turn = turn % 2
 
-        if game_over:
-            pygame.time.wait(3000)
-			
-# IA vs IA
-elif pvp == 2:
-    while not game_over:
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
-
-        pygame.draw.rect(screen, BLACK, (0,0, width, SQUARESIZE))
-        #print(event.pos)
-        # # Ask for Player 1 Input
-        if turn == PLAYER1 and not game_over:
-            # col = random.randint(0, COLUMN_COUNT-1)  # Esto es lo que se reemplazará
-            col, minimax_score = minimax(board, 5, -math.inf, math.inf, True, activated(is_activated))  # Calcula el mejor movimiento para el jugador 1 (IA)
-            
-            if is_valid_location(board, col):
-                row = get_next_open_row(board, col)
-                drop_piece(board, row, col, HUMAN_PIECE)  # El jugador 1 (IA) coloca su ficha (roja) en la columna seleccionada
-
-                if winning_move(board, HUMAN_PIECE):
-                    label = myfont.render("Player 1 wins!!", 1, RED)
-                    screen.blit(label, (40,10))
-                    game_over = True
-
-                print_board(board)
-                draw_board(board)
-
-                turn += 1
-                turn = turn % 2
-
-        # # Ask for Player 2 Input
-        if turn == PLAYER2 and not game_over:
-
-            #col = random.randint(0, COLUMN_COUNT-1)
-            #col = pick_best_move(board, AI_PIECE)
-            col, minimax_score = minimax(board, 5, -math.inf, math.inf, True, activated(is_activated))
-
-            if is_valid_location(board, col):
-                #pygame.time.wait(500)
-                row = get_next_open_row(board, col)
-                drop_piece(board, row, col, AI_PIECE)
-
-                if winning_move(board, AI_PIECE):
-                    label = myfont.render("Player 2 wins!!", 1, YELLOW)
-                    screen.blit(label, (40,10))
-                    game_over = True
-
-                print_board(board)
-                draw_board(board)
-
-                turn += 1
-                turn = turn % 2
-
-        if game_over:
-            pygame.time.wait(3000)
-            
+	if game_over:
+		pygame.time.wait(3000)
