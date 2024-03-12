@@ -19,3 +19,6 @@ Para instalar numpy, puedes usar el siguiente comando:
 
 Para instalar pygame, puedes utilizar el siguiente comando:
 `pip install pygame`
+
+## Video demostración
+[Enlace para ver video](https://youtu.be/wzEt9WmXcVQ)
