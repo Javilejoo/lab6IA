@@ -4,6 +4,7 @@ import pygame
 import sys
 import math
 
+
 BLUE = (0,0,255)
 BLACK = (0,0,0)
 RED = (255,0,0)
@@ -213,6 +214,50 @@ def activated(is_activated):
         return True
     elif is_activated == 'n':
         return False
+    
+
+
+class QLearningAgent:
+    def __init__(self, learning_rate=0.1, discount_rate=0.95, exploration_rate=1.0, exploration_decay=0.99, min_exploration_rate=0.01):
+        self.learning_rate = learning_rate  # Alpha (α)
+        self.discount_rate = discount_rate  # Gamma (γ)
+        self.exploration_rate = exploration_rate  # Epsilon (ε)
+        self.exploration_decay = exploration_decay
+        self.min_exploration_rate = min_exploration_rate
+        self.q_table = {}  # Initialize Q-table, potentially with a state representation
+
+    def update_q_table(self, state, action, reward, next_state):
+        """
+        Update Q-values based on the formula:
+        Q(state, action) = Q(state, action) + α * (reward + γ * max(Q(next_state, all actions)) - Q(state, action))
+        """
+        if state not in self.q_table:
+            self.q_table[state] = np.zeros(7)  # Assuming 7 columns
+        if next_state not in self.q_table:
+            self.q_table[next_state] = np.zeros(7)
+
+        max_future_q = np.max(self.q_table[next_state])
+        current_q = self.q_table[state][action]
+        new_q = current_q + self.learning_rate * (reward + self.discount_rate * max_future_q - current_q)
+        self.q_table[state][action] = new_q
+
+    def choose_action(self, state, valid_actions):
+        """
+        Decide an action based on an ε-greedy policy.
+        """
+        if random.uniform(0, 1) < self.exploration_rate:
+            return random.choice(valid_actions)  # Explore
+        else:
+            if state not in self.q_table:
+                self.q_table[state] = np.zeros(7)
+            return np.argmax(self.q_table[state])  # Exploit learned values
+
+    def decay_exploration_rate(self):
+        """
+        Decay the exploration rate over time, ensuring it never goes below a minimum threshold.
+        """
+        self.exploration_rate = max(self.min_exploration_rate, self.exploration_rate * self.exploration_decay)
+
 
 # menu 
 print("+----------------------+")
@@ -248,6 +293,9 @@ pygame.display.update()
 myfont = pygame.font.SysFont("monospace", 75)
 
 turn = random.randint(PLAYER1, PLAYER2)
+
+# crear el agente Q_learning
+q_learning_agent = QLearningAgent()
 
 # IA vs Persona
 if pvp == 1:
