@@ -2,7 +2,7 @@ import numpy as np
 import random
 import inspect
 import os
-import sys
+import pygame
 from kaggle_environments import make, utils, agent
 
 
@@ -69,3 +69,49 @@ saved_agent = agent.get_last_callable(submission)
 env = make("connectx", debug=True)
 env.run([saved_agent, saved_agent])
 print("Success!" if env.state[0].status == env.state[1].status == "DONE" else "Failed...")
+
+
+
+# Inicializar el tablero
+pygame.init()
+
+# Contantes
+ROW_COUNT = 6
+COLUMN_COUNT = 7
+SQUARESIZE = 100
+RADIUS = int(SQUARESIZE / 2 - 5)
+
+width = COLUMN_COUNT * SQUARESIZE
+height = (ROW_COUNT + 1) * SQUARESIZE
+
+size = (width, height)
+
+# colores
+BLUE = (0, 0, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+YELLOW = (255, 255, 0)
+
+def create_board():
+    board = np.zeros((ROW_COUNT,COLUMN_COUNT))
+    return board
+
+def draw_board(board):
+    for c in range(COLUMN_COUNT):
+        for r in range(ROW_COUNT):
+            pygame.draw.rect(screen, BLUE, (c*SQUARESIZE, r*SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE))
+            pygame.draw.circle(screen, BLACK, (int(c*SQUARESIZE + SQUARESIZE/2), int(r*SQUARESIZE + SQUARESIZE/2 + SQUARESIZE)), RADIUS)
+    
+
+    for c in range(COLUMN_COUNT):
+        for r in range(ROW_COUNT):
+            if board[r][c] == 1:
+                pygame.draw.circle(screen, RED, (int(c*SQUARESIZE + SQUARESIZE/2), height - int(r*SQUARESIZE + SQUARESIZE/2)), RADIUS)
+            elif board[r][c] == 2:
+                pygame.draw.circle(screen, YELLOW, (int(c*SQUARESIZE + SQUARESIZE/2), height - int(r*SQUARESIZE + SQUARESIZE/2)), RADIUS)           
+    pygame.display.update()
+
+screen = pygame.display.set_mode(size)
+board = create_board()
+draw_board(board)
+pygame.display.update()
