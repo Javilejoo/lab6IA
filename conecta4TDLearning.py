@@ -3,7 +3,8 @@ import random
 import inspect
 import os
 import sys
-from kaggle_environments import make, utils, evaluate
+from kaggle_environments import make, utils, agent
+
 
 # Función para soltar una pieza en el tablero
 def drop_piece(grid, col, piece, config):
@@ -54,16 +55,17 @@ def write_agent_to_file(function, file):
         f.write(inspect.getsource(function))
         print(function, "written to", file)
 
-# Crear el entorno del juego
-env = make("connectx", debug=True)
+
 
 # Escribir el agente en un archivo
 write_agent_to_file(my_agent, "submission.py")
 
 # Leer el archivo del agente
-submission = utils.read_file("/kaggle/working/submission.py")
-agent = utils.get_last_callable(submission)
+submission = utils.read_file("submission.py")
+saved_agent = agent.get_last_callable(submission)
 
 # Ejecutar el agente
-env.run([agent, agent])
+# Crear el entorno del juego
+env = make("connectx", debug=True)
+env.run([saved_agent, saved_agent])
 print("Success!" if env.state[0].status == env.state[1].status == "DONE" else "Failed...")
