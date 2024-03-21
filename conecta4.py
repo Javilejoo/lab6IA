@@ -428,3 +428,109 @@ elif pvp == 2:
 
         if game_over:
             pygame.time.wait(3000)
+
+class AgenteQLearning:
+    def __init__(self, learning_rate=0.1, discount_rate=0.95, exploration_rate=1.0, exploration_decay=0.99, min_exploration_rate=0.01):
+        self.learning_rate = learning_rate
+        self.discount_rate = discount_rate
+        self.exploration_rate = exploration_rate
+        self.exploration_decay = exploration_decay
+        self.min_exploration_rate = min_exploration_rate
+        self.q_table = {}
+
+    def tomar_decision(self, estado):
+        if random.uniform(0, 1) < self.exploration_rate:
+            return random.choice(get_valid_locations(estado))  # Explorar
+        else:
+            if estado not in self.q_table:
+                self.q_table[estado] = np.zeros(7)
+            return np.argmax(self.q_table[estado])  # Explotar valores aprendidos
+
+    def actualizar_q_table(self, estado, accion, recompensa, nuevo_estado):
+        if estado not in self.q_table:
+            self.q_table[estado] = np.zeros(7)
+        if nuevo_estado not in self.q_table:
+            self.q_table[nuevo_estado] = np.zeros(7)
+
+        max_future_q = np.max(self.q_table[nuevo_estado])
+        current_q = self.q_table[estado][accion]
+        nueva_q = current_q + self.learning_rate * (recompensa + self.discount_rate * max_future_q - current_q)
+        self.q_table[estado][accion] = nueva_q
+
+def prueba_IA_vs_Humano(IA, num_partidas=100):
+    resultados = {'IA': 0, 'Humano': 0, 'Empate': 0}
+
+    for _ in range(num_partidas):
+        board = create_board()
+        game_over = False
+        turn = random.choice([PLAYER1, PLAYER2])
+
+        while not game_over:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    posx = event.pos[0]
+                    col = int(math.floor(posx / SQUARESIZE))
+
+                    if is_valid_location(board, col):
+                        row = get_next_open_row(board, col)
+                        drop_piece(board, row, col, HUMAN_PIECE)
+
+                        if winning_move(board, HUMAN_PIECE):
+                            resultados['Humano'] += 1
+                            game_over = True
+                            break
+
+                        turn += 1
+                        turn = turn % 2
+
+                        print_board(board)
+                        draw_board(board)
+
+                        # Actualizar la Q-table basada en el movimiento del humano
+                        # Esto podría requerir adaptaciones dependiendo de la estructura de tu juego
+                        # AgenteQLearning.actualizar_q_table(estado, accion, recompensa, nuevo_estado)
+
+            if turn == PLAYER2 and not game_over:
+                # Obtener el estado actual del tablero para la Q-table
+                estado = board_representation(board)
+
+                # Tomar una decisión basada en la Q-table
+                accion = IA.tomar_decision(estado)
+
+                # Hacer el movimiento correspondiente
+                row = get_next_open_row(board, accion)
+                drop_piece(board, row, accion, AI_PIECE)
+
+                if winning_move(board, AI_PIECE):
+                    resultados['IA'] += 1
+                    game_over = True
+                    break
+
+                print_board(board)
+                draw_board(board)
+
+                # Actualizar la Q-table basada en el movimiento de la IA
+                # Esto podría requerir adaptaciones dependiendo de la estructura de tu juego
+                # AgenteQLearning.actualizar_q_table(estado, accion, recompensa, nuevo_estado)
+
+        if not game_over:
+            resultados['Empate'] += 1
+
+    # Imprimir resultados
+
+def ajustar_hiperparametros():
+    # Implementa la lógica para ajustar los hiperparámetros de la IA con Q-learning
+    pass
+
+if __name__ == "__main__":
+    # Crea una instancia del agente Q-learning
+    ia_q_learning = AgenteQLearning()
+
+    # Prueba la IA contra un jugador humano
+    prueba_IA_vs_Humano(ia_q_learning)
+
+    # Ajusta los hiperparámetros de la IA
+    ajustar_hiperparametros()
