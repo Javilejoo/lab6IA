@@ -208,6 +208,8 @@ def draw_board(board):
                 pygame.draw.circle(screen, YELLOW, (int(c*SQUARESIZE+SQUARESIZE/2), height-int(r*SQUARESIZE+SQUARESIZE/2)), RADIUS)
     pygame.display.update()
 
+def board_representation(board):
+    return board.flatten()
 
 def activated(is_activated):
     if is_activated == 'y':
@@ -339,26 +341,34 @@ if pvp == 1:
 
         # # Ask for Player 2 Input
         if turn == PLAYER2 and not game_over:
+            # Get the current state of the board for the Q-learning agent
+            current_state = board_representation(board)  # You need to implement this function
 
-            #col = random.randint(0, COLUMN_COUNT-1)
-            #col = pick_best_move(board, AI_PIECE)
-            col, minimax_score = minimax(board, 5, -math.inf, math.inf, True, activated(is_activated))
+            # Decide on the best action based on the current policy
+            # For simplicity, we're assuming all columns are valid actions
+            valid_actions = get_valid_locations(board)  # You likely have this function
+            col = q_learning_agent.choose_action(current_state, valid_actions)
 
             if is_valid_location(board, col):
-                #pygame.time.wait(500)
                 row = get_next_open_row(board, col)
                 drop_piece(board, row, col, AI_PIECE)
 
+                # Check for win condition
                 if winning_move(board, AI_PIECE):
                     label = myfont.render("Player 2 wins!!", 1, YELLOW)
-                    screen.blit(label, (40,10))
+                    screen.blit(label, (40, 10))
                     game_over = True
 
                 print_board(board)
                 draw_board(board)
 
+                # Update the Q-table based on the action taken and the result
+                # This might involve observing the new state and any rewards
+                # Example: q_learning_agent.update_q_table(current_state, action, reward, next_state, done)
+
                 turn += 1
                 turn = turn % 2
+
 
         if game_over:
             pygame.time.wait(3000)
